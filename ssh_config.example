@@ -1,0 +1,17 @@
+Host web-server-01
+    HostName 192.168.1.101
+    Port 22
+    User admin
+    IdentityFile ~/.ssh/id_rsa
+
+Host db-server-01
+    HostName 192.168.1.102
+    Port 22
+    User dba
+    IdentityFile ~/.ssh/id_rsa
+
+Host app-server-01
+    HostName 192.168.1.103
+    Port 2222
+    User deployer
+    IdentityFile ~/.ssh/id_ed25519

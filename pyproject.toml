@@ -1,0 +1,44 @@
+[project]
+name = "ssh-mcp-py"
+version = "0.1.0"
+description = "A Model Context Protocol for managing and interacting with multiple virtual machines over SSH"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Sean Dang" }]
+maintainers = [
+    { name = "Sean Dang", email = "sondt.2709@gmail.com" },
+]
+keywords = ["vm", "mcp", "llm", "automation"]
+license = { text = "MIT" }
+dependencies = [
+    "mcp[cli]>=1.13.1",
+    "paramiko>=4.0.0",
+    "python-dotenv>=1.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.12.0",
+    "ruff>=0.12.10",
+    "ty>=0.0.1a19",
+]
+
+[project.urls]
+Homepage = "https://github.com/sondt2709/ssh-mcp-py"
+Repository = "https://github.com/sondt2709/ssh-mcp-py"
+
+[tool.ruff]
+builtins = ["_"]
+exclude = [".venv"]
+fix = true
+
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+extend-select = ["I"] # Import-related rules
+
+[tool.ty.src]
+include = ["vm_agent"]
