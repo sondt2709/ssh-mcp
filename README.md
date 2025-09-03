@@ -4,103 +4,16 @@ SSH MCP is a Model Context Protocol tool written in Python for managing and inte
 
 -----
 
-## Key Features 🚀
-
-- **Standard SSH Config**: Uses the familiar `~/.ssh/config` file format for managing VM connection details
-- **Automatic Key Management**: Uses SSH keys specified in the config file for each host
-- **Remote Command Execution**: Execute terminal commands on any configured VM directly from your local machine
-- **MCP Integration**: Provides tools for AI assistants through the Model Context Protocol
-- **Simplified Workflow**: Streamline your server administration tasks using standard SSH configuration
-
------
-
-## Requirements 📋
-
-To use SSH MCP, you'll need the following on your system:
-
-- **Python 3.12 or higher**: Ensure you have a recent version of Python installed.
-- **paramiko**: The core Python library for the SSHv2 protocol.
-- **fastmcp**: For MCP server functionality.
-
------
-
-## Installation 💻
-
-1. **Clone the Repository**: Start by cloning the SSH MCP repository to your local machine
-2. **Install Dependencies**: Install the necessary Python libraries `uv sync`
-
------
-
-## Configuration ⚙️
-
-SSH MCP uses the standard SSH configuration file format. By default, it looks for `~/.ssh/config`, but you can specify a custom path using the `SSH_CONFIG_PATH` environment variable.
-
-### SSH Config File Setup
-
-Create or update your `~/.ssh/config` file with your server details:
-
-**Example `~/.ssh/config`:**
-
-```config
-Host web-server-01
-    HostName 192.168.1.101
-    Port 22
-    User admin
-    IdentityFile ~/.ssh/id_rsa
-
-Host db-server-01
-    HostName 192.168.1.102
-    Port 22
-    User dba
-    IdentityFile ~/.ssh/id_rsa
-
-Host app-server-01
-    HostName 192.168.1.103
-    Port 2222
-    User deployer
-    IdentityFile ~/.ssh/id_ed25519
-```
-
-### Environment Variables (Optional)
-
-- `SSH_CONFIG_PATH`: Path to SSH config file (defaults to `~/.ssh/config`)
-
------
-
 ## Usage Guide 📖
 
-SSH MCP can be used in two ways: as a direct command-line tool or as an MCP (Model Context Protocol) server.
-
-### Direct Command-Line Usage
-
-You can execute commands directly using the command line interface:
-
-**Basic Command Execution**:
-
-```bash
-python cli.py <host> "<command_to_execute>"
-```
-
-**Examples**:
-
-To list the files in the home directory of `web-server-01`:
-
-```bash
-python cli.py web-server-01 "ls -l /home/admin"
-```
-
-To check the disk space on `db-server-01`:
-
-```bash
-python cli.py db-server-01 "df -h"
-```
+SSH MCP can be used in two ways: as an MCP server or as a direct command-line tool.
 
 ### MCP Server Usage
 
 SSH MCP can also run as an MCP server, providing tools that can be used by AI assistants and other MCP clients:
 
 ```bash
-python main.py
+uv run ssh-mcp-py
 ```
 
 **Available MCP Tools:**
@@ -144,6 +57,30 @@ To use SSH MCP with Claude Desktop, add the following configuration to your `cla
 
 Replace `your_username` with your actual username
 
+### Direct Command-Line Usage
+
+You can execute commands directly using the command line interface:
+
+**Basic Command Execution**:
+
+```bash
+uv run cli.py <host> "<command_to_execute>"
+```
+
+**Examples**:
+
+To list the files in the home directory of `web-server-01`:
+
+```bash
+uv run cli.py web-server-01 "ls -la ~"
+```
+
+To check the disk space on `db-server-01`:
+
+```bash
+uv run cli.py db-server-01 "df -h"
+```
+
 ### MCP Inspector
 
 You can inspect and test the MCP server using the MCP Inspector:
@@ -153,6 +90,63 @@ npx @modelcontextprotocol/inspector uv run ssh-mcp-py -e SSH_CONFIG_PATH=/Users/
 ```
 
 This will open a web interface where you can test the available MCP tools interactively.
+
+-----
+
+## Key Features 🚀
+
+- **Standard SSH Config**: Uses the familiar `~/.ssh/config` file format for managing VM connection details
+- **Automatic Key Management**: Uses SSH keys specified in the config file for each host
+- **Remote Command Execution**: Execute terminal commands on any configured VM directly from your local machine
+- **MCP Integration**: Provides tools for AI assistants through the Model Context Protocol
+- **Simplified Workflow**: Streamline your server administration tasks using standard SSH configuration
+
+-----
+
+## Requirements 📋
+
+To use SSH MCP, you'll need the following on your system:
+
+- **Python 3.10 or higher**: Ensure you have a recent version of Python installed.
+- **paramiko**: The core Python library for the SSHv2 protocol.
+- **fastmcp**: For MCP server functionality.
+
+-----
+
+## Configuration ⚙️
+
+SSH MCP uses the standard SSH configuration file format. By default, it looks for `~/.ssh/config`, but you can specify a custom path using the `SSH_CONFIG_PATH` environment variable.
+
+### SSH Config File Setup
+
+Create or update your `~/.ssh/config` file with your server details:
+
+**Example `~/.ssh/config`:**
+
+```config
+Host web-server-01
+    HostName 192.168.1.101
+    Port 22
+    User admin
+    IdentityFile ~/.ssh/id_rsa
+
+Host db-server-01
+    HostName 192.168.1.102
+    Port 22
+    User dba
+    IdentityFile ~/.ssh/id_rsa
+
+Host app-server-01
+    HostName 192.168.1.103
+    Port 2222
+    User deployer
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+### Environment Variables (Optional)
+
+- `MCP_TRANSPORT`: stdio, sse, streamable-http (defaults to stdio)
+- `SSH_CONFIG_PATH`: Path to SSH config file (defaults to `~/.ssh/config`)
 
 -----
 
@@ -230,25 +224,19 @@ graph TD
 
 ## Development & Testing 🧪
 
-SSH MCP uses a focused testing approach that emphasizes real integration tests over complex mocked unit tests.
+### Clone code and setup 💻
+
+1. **Clone the Repository**: Start by cloning the SSH MCP repository to your local machine
+2. **Install Dependencies**: Install the necessary Python libraries `uv sync`
+3. **Setup Pre-commit**: Run `uv run pre-commit install`. This will automatically run code quality checks before each commit, catching issues early and maintaining consistent code standards.
 
 ### Test Structure
+
+SSH MCP uses a focused testing approach that emphasizes real integration tests over complex mocked unit tests.
 
 - **`tests/test_ssh_client.py`**: Basic unit tests for core functionality
 - **`tests/test_mcp.py`**: Minimal MCP tool tests with simple mocking
 - **`tests/test_integration.py`**: Real integration tests that connect to actual SSH hosts
-
-## Development Guide 🛠️
-
-### Pre-commit Setup (Highly Recommended)
-
-**Before starting development**, it's highly recommended to install pre-commit hooks to ensure code quality:
-
-```bash
-uv run pre-commit install
-```
-
-This will automatically run code quality checks before each commit, catching issues early and maintaining consistent code standards.
 
 ### Integration Testing Setup
 
@@ -294,9 +282,10 @@ uv run ruff format .
 
 ### Publishing to PyPI
 
-To publish this package to PyPI:
+To publish this package to PyPI, bump the version in pyproject.toml and run:
 
 ```bash
+rm -rf dist
 uv build
 uv publish --username __token__ --password YOUR_PYPI_API_KEY
 ```
