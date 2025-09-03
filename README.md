@@ -201,7 +201,20 @@ SSH MCP uses a focused testing approach that emphasizes real integration tests o
 - **`tests/test_mcp.py`**: Minimal MCP tool tests with simple mocking
 - **`tests/test_integration.py`**: Real integration tests that connect to actual SSH hosts
 
-### Integration Testing
+## Development Guide 🛠️
+
+### Pre-commit Setup (Highly Recommended)
+
+**Before starting development**, it's highly recommended to install pre-commit hooks to ensure code quality:
+
+```bash
+# Install pre-commit hooks (run this first!)
+uv run pre-commit install
+```
+
+This will automatically run code quality checks before each commit, catching issues early and maintaining consistent code standards.
+
+### Integration Testing Setup
 
 The integration tests require a host named `test` in your SSH config. Add a host like this to `~/.ssh/config`:
 
@@ -232,6 +245,7 @@ uv run pytest tests/test_ssh_client.py tests/test_mcp.py -v
 
 # Run with coverage
 uv run pytest tests/ --cov=ssh_mcp --cov-report=html
+```
 
 ### Code Quality
 
@@ -244,3 +258,17 @@ uv run ruff check .
 # Format code
 uv run ruff format .
 ```
+
+### Publishing to PyPI
+
+To publish this package to PyPI:
+
+```bash
+# Build the package
+uv build
+
+# Publish to PyPI (requires API token)
+uv publish --token __token__ --password YOUR_PYPI_API_KEY
+```
+
+Replace `YOUR_PYPI_API_KEY` with your actual PyPI API token.
