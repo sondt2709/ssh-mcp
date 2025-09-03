@@ -117,6 +117,43 @@ python main.py
 4. **test_ssh_connection**: Test SSH connection to a host
    - Parameters: `hostname` (string)
 
+### Integration with Claude Desktop
+
+To use SSH MCP with Claude Desktop, add the following configuration to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "ssh": {
+      "command": "uvx",
+      "args": [
+        "ssh-mcp-py"
+      ],
+      "env": {
+        "MCP_TRANSPORT": "stdio",
+        "SSH_CONFIG_PATH": "/Users/your_username/.ssh/config"
+      }
+    }
+  }
+}
+```
+
+**Configuration File Location:**
+
+- **macOS**: `/Users/your_username/Library/Application Support/Claude/claude_desktop_config.json`
+
+Replace `your_username` with your actual username
+
+### MCP Inspector
+
+You can inspect and test the MCP server using the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector uv run ssh-mcp-py -e SSH_CONFIG_PATH=/Users/your_username/.ssh/config
+```
+
+This will open a web interface where you can test the available MCP tools interactively.
+
 -----
 
 ## Architecture & Workflow 🏗️
@@ -208,7 +245,6 @@ SSH MCP uses a focused testing approach that emphasizes real integration tests o
 **Before starting development**, it's highly recommended to install pre-commit hooks to ensure code quality:
 
 ```bash
-# Install pre-commit hooks (run this first!)
 uv run pre-commit install
 ```
 
@@ -252,10 +288,7 @@ uv run pytest tests/ --cov=ssh_mcp --cov-report=html
 The project uses `ruff` for linting and formatting:
 
 ```bash
-# Check code quality
 uv run ruff check .
-
-# Format code
 uv run ruff format .
 ```
 
@@ -264,11 +297,8 @@ uv run ruff format .
 To publish this package to PyPI:
 
 ```bash
-# Build the package
 uv build
-
-# Publish to PyPI (requires API token)
-uv publish --token __token__ --password YOUR_PYPI_API_KEY
+uv publish --username __token__ --password YOUR_PYPI_API_KEY
 ```
 
 Replace `YOUR_PYPI_API_KEY` with your actual PyPI API token.
