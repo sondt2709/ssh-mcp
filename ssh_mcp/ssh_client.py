@@ -1,10 +1,14 @@
-"""SSH client module for managing SSH connections and command execution."""
+"""SSH client module for managing SSH connections and command execution, with optional SOCKS5 proxy support."""
 
+import json
 import os
 import traceback
 from typing import Any, Dict, List, Optional
 
 import paramiko
+import socks
+
+from ssh_mcp.model.proxy import ProxyConfig
 
 
 class SSHConfig:
@@ -47,27 +51,27 @@ class SSHConfig:
 
 
 class SSHClient:
-    """SSH client for executing commands on remote hosts."""
+    """SSH client for executing commands on remote hosts, with optional SOCKS5 proxy support."""
 
     def __init__(self, config: SSHConfig):
-        """Initialize SSH client with configuration."""
+        """Initialize SSH client with configuration and optional proxy config."""
         self.config = config
+        self.proxy_config = self._load_proxy_config()
+
+    def _load_proxy_config(self) -> Optional[dict[str, ProxyConfig]]:
+        """Load proxy config from PROXY_CONFIG_PATH env if set."""
+        proxy_path = os.getenv("PROXY_CONFIG_PATH")
+        if proxy_path and os.path.exists(proxy_path):
+            try:
+                with open(proxy_path, "r") as f:
+                    config: dict[str, Any] = json.load(f)
+                    return {k: ProxyConfig.model_validate(v) for k, v in config.items()}
+            except Exception:
+                traceback.print_exc()
+        return None
 
     def execute_command(self, hostname: str, command: str) -> Dict[str, Any]:
-        """Execute a command on a remote host via SSH.
-
-        Args:
-            hostname: The hostname of the target server
-            command: The command to execute
-
-        Returns:
-            Dictionary containing execution results with keys:
-            - success: Boolean indicating if command executed successfully
-            - stdout: Command output (if successful)
-            - stderr: Error output (if any)
-            - exit_code: Command exit code (if successful)
-            - error: Error message (if failed)
-        """
+        """Execute a command on a remote host via SSH, with optional SOCKS5 proxy support."""
         host_config = self.config.get_host_config(hostname)
 
         if not host_config:
@@ -79,6 +83,31 @@ class SSHClient:
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+        sock: socks.socksocket | None = None
+        proxy = self.proxy_config.get(hostname) if self.proxy_config else None
+        if proxy:
+            try:
+                sock = socks.socksocket()
+                sock.set_proxy(
+                    proxy_type=socks.SOCKS5,
+                    addr=proxy.host,
+                    port=proxy.port,
+                    username=proxy.username,
+                    password=proxy.password,
+                )
+                sock.connect(
+                    (
+                        host_config.get("hostname", hostname),
+                        int(host_config.get("port", 22)),
+                    )
+                )
+            except Exception:
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": "Failed to connect via SOCKS5 proxy.",
+                }
+
         try:
             ssh_client.connect(
                 hostname=host_config.get("hostname", hostname),
@@ -86,6 +115,7 @@ class SSHClient:
                 username=host_config.get("user", os.getenv("USER")),
                 key_filename=host_config.get("identityfile"),
                 timeout=30,
+                sock=sock,
             )
 
             stdin, stdout, stderr = ssh_client.exec_command(command)
@@ -107,6 +137,11 @@ class SSHClient:
 
         finally:
             ssh_client.close()
+            if sock:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
 
     def list_hosts(self) -> List[str]:
         """List all configured hosts."""

@@ -86,7 +86,7 @@ uv run cli.py db-server-01 "df -h"
 You can inspect and test the MCP server using the MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector uv run ssh-mcp-py -e SSH_CONFIG_PATH=/Users/your_username/.ssh/config
+npx @modelcontextprotocol/inspector uv run ssh-mcp-py -e SSH_CONFIG_PATH=/Users/your_username/.ssh/config -e PROXY_CONFIG_PATH=/config/proxy.json
 ```
 
 This will open a web interface where you can test the available MCP tools interactively.

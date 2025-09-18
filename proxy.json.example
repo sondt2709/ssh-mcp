@@ -1,0 +1,8 @@
+{
+  "web-server-01": {
+    "host": "1.2.3.4",
+    "port": 1080,
+    "username": "myname",
+    "password": "mypassword"
+  }
+}

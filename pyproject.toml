@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "A Model Context Protocol for managing and interacting with multiple virtual machines over SSH"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "Sean Dang" }]
+authors = [{ name = "Sean Dang", email = "sondt.2709@gmail.com" }]
 maintainers = [
     { name = "Sean Dang", email = "sondt.2709@gmail.com" },
 ]
@@ -13,6 +13,7 @@ license = { text = "MIT" }
 dependencies = [
     "mcp[cli]>=1.13.1",
     "paramiko>=4.0.0",
+    "pysocks>=1.7.1",
     "python-dotenv>=1.1.1",
 ]
 
