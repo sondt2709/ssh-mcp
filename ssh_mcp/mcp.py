@@ -30,19 +30,26 @@ def get_ssh_client() -> SSHClient:
 
 
 @mcp.tool()
-async def execute_ssh_command(hostname: str, command: str) -> str:
+async def execute_ssh_command(
+    hostname: str, 
+    command: str, 
+    timeout: int = 30, 
+    max_length: int = 1000
+) -> str:
     """Execute a command on a remote host via SSH.
 
     Args:
         hostname: The hostname/alias of the target server as configured in SSH config
         command: The shell command to execute on the remote host
+        timeout: SSH connection and command timeout in seconds (default: 30, max: 300)
+        max_length: Maximum length of stdout/stderr output in characters (default: 1000, max: 10,000,000)
 
     Returns:
         Formatted string containing command output or error information
     """
     try:
         client = get_ssh_client()
-        result = client.execute_command(hostname, command)
+        result = client.execute_command(hostname, command, timeout, max_length)
 
         if result["success"]:
             output = f"""SUCCESS: Command executed on {hostname}
@@ -120,11 +127,12 @@ async def get_host_info(hostname: str) -> str:
 
 
 @mcp.tool()
-async def test_ssh_connection(hostname: str) -> str:
+async def test_ssh_connection(hostname: str, timeout: int = 30) -> str:
     """Test SSH connection to a remote host without executing any commands.
 
     Args:
         hostname: The hostname/alias of the target server to test
+        timeout: SSH connection timeout in seconds (default: 30, max: 300)
 
     Returns:
         String indicating whether the connection was successful or failed
@@ -136,8 +144,35 @@ async def test_ssh_connection(hostname: str) -> str:
         if not host_config:
             return f"ERROR: Host '{hostname}' not found in configuration."
 
+        # Validate timeout parameter
+        command_timeout = min(max(timeout, 1), 300)  # 1s to 5 minutes
+
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        sock = None
+        # Check if proxy config exists for this host
+        proxy = client.proxy_config.get(hostname) if client.proxy_config else None
+        if proxy:
+            try:
+                import socks
+
+                sock = socks.socksocket()
+                sock.set_proxy(
+                    proxy_type=socks.SOCKS5,
+                    addr=proxy.host,
+                    port=proxy.port,
+                    username=proxy.username,
+                    password=proxy.password,
+                )
+                sock.connect(
+                    (
+                        host_config.get("hostname", hostname),
+                        int(host_config.get("port", 22)),
+                    )
+                )
+            except Exception:
+                return f"ERROR: Failed to connect via SOCKS5 proxy for {hostname}"
 
         try:
             ssh_client.connect(
@@ -145,7 +180,8 @@ async def test_ssh_connection(hostname: str) -> str:
                 port=host_config.get("port", 22),
                 username=host_config.get("user", os.getenv("USER")),
                 key_filename=host_config.get("identityfile"),
-                timeout=10,
+                timeout=command_timeout,
+                sock=sock,
             )
 
             return f"SUCCESS: Connection to {hostname} successful"
@@ -154,6 +190,11 @@ async def test_ssh_connection(hostname: str) -> str:
             return f"ERROR: Connection to {hostname} failed: {str(e)}"
         finally:
             ssh_client.close()
+            if sock:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
 
     except Exception as e:
         traceback.print_exc()

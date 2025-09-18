@@ -1,0 +1,14 @@
+{
+  "vm-a": {
+    "host": "proxy.example.com",
+    "port": 1080,
+    "username": "proxy_user",
+    "password": "proxy_pass"
+  },
+  "vm-b": {
+    "host": "another-proxy.example.com",
+    "port": 1080,
+    "username": "another_user",
+    "password": "another_pass"
+  }
+}

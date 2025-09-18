@@ -38,7 +38,8 @@ class TestSSHMCPTools:
 
         with patch("ssh_mcp.mcp.get_ssh_client", return_value=mock_client):
             result = await mcp.call_tool(
-                "execute_ssh_command", {"hostname": "nonexistent", "command": "echo test"}
+                "execute_ssh_command",
+                {"hostname": "nonexistent", "command": "echo test"},
             )
 
         assert "ERROR" in str(result)

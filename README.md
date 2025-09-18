@@ -143,10 +143,36 @@ Host app-server-01
     IdentityFile ~/.ssh/id_ed25519
 ```
 
+### Proxy Configuration (Optional)
+
+SSH MCP supports SOCKS5 proxy connections with authentication. Create a JSON file with proxy configurations and set the `PROXY_CONFIG_PATH` environment variable:
+
+**Example `proxy_config.json`:**
+
+```json
+{
+  "vm-a": {
+    "host": "proxy.example.com",
+    "port": 1080,
+    "username": "proxy_user",
+    "password": "proxy_pass"
+  },
+  "vm-b": {
+    "host": "another-proxy.example.com",
+    "port": 1080,
+    "username": "another_user",
+    "password": "another_pass"
+  }
+}
+```
+
+When a host is configured in both SSH config and proxy config, SSH MCP will automatically use the SOCKS5 proxy for that connection.
+
 ### Environment Variables (Optional)
 
 - `MCP_TRANSPORT`: stdio, sse, streamable-http (defaults to stdio)
 - `SSH_CONFIG_PATH`: Path to SSH config file (defaults to `~/.ssh/config`)
+- `PROXY_CONFIG_PATH`: Path to JSON file containing SOCKS5 proxy configurations (optional)
 
 -----
 

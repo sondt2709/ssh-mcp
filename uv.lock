@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10"
 
 [[package]]
@@ -1010,11 +1010,12 @@ wheels = [
 
 [[package]]
 name = "ssh-mcp-py"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
     { name = "paramiko" },
+    { name = "pydantic" },
     { name = "pysocks" },
     { name = "python-dotenv" },
 ]
@@ -1033,6 +1034,7 @@ dev = [
 requires-dist = [
     { name = "mcp", extras = ["cli"], specifier = ">=1.13.1" },
     { name = "paramiko", specifier = ">=4.0.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pysocks", specifier = ">=1.7.1" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
 ]

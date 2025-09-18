@@ -70,8 +70,25 @@ class SSHClient:
                 traceback.print_exc()
         return None
 
-    def execute_command(self, hostname: str, command: str) -> Dict[str, Any]:
-        """Execute a command on a remote host via SSH, with optional SOCKS5 proxy support."""
+    def execute_command(
+        self, 
+        hostname: str, 
+        command: str, 
+        timeout: int = 30, 
+        max_length: int = 1000
+    ) -> Dict[str, Any]:
+        """Execute a command on a remote host via SSH, with optional SOCKS5 proxy support.
+        
+        Args:
+            hostname: The hostname of the target server
+            command: The command to execute
+            timeout: SSH connection and command timeout in seconds (max 300)
+            max_length: Maximum length of stdout/stderr output in characters (max 10,000,000)
+        """
+        # Validate parameters
+        command_timeout = min(max(timeout, 1), 300)  # 1s to 5 minutes
+        max_stdout_length = min(max(max_length, 1), 10_000_000)  # 1 to 10M chars
+
         host_config = self.config.get_host_config(hostname)
 
         if not host_config:
@@ -114,15 +131,23 @@ class SSHClient:
                 port=host_config.get("port", 22),
                 username=host_config.get("user", os.getenv("USER")),
                 key_filename=host_config.get("identityfile"),
-                timeout=30,
+                timeout=command_timeout,
                 sock=sock,
             )
 
-            stdin, stdout, stderr = ssh_client.exec_command(command)
+            stdin, stdout, stderr = ssh_client.exec_command(
+                command, timeout=command_timeout
+            )
 
             stdout_data = stdout.read().decode("utf-8")
             stderr_data = stderr.read().decode("utf-8")
             exit_code = stdout.channel.recv_exit_status()
+
+            # Truncate output if it exceeds max length
+            if len(stdout_data) > max_stdout_length:
+                stdout_data = stdout_data[:max_stdout_length] + "... (truncated)"
+            if len(stderr_data) > max_stdout_length:
+                stderr_data = stderr_data[:max_stdout_length] + "... (truncated)"
 
             return {
                 "success": True,
